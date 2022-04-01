@@ -73,15 +73,15 @@ def connect(host, port):
         yield Pipe(sock.sendall, sock.recv)
 
 
-@contextmanager
 def accept(host, port):
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen()
-        conn, addr = s.accept()
-    with conn:
-        yield Pipe(conn.sendall, conn.recv)
+        while True:
+            conn, addr = s.accept()
+            with conn:
+                yield Pipe(conn.sendall, conn.recv), addr
 
 
 def test_pipe():
