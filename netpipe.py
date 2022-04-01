@@ -31,3 +31,35 @@ class Pipe:
 
     def read_bytes(self):
         return self.recv(self.read_uint())
+
+
+def test_pipe():
+    b1, b2 = bytearray(), bytearray()
+
+    def s1_send(data):
+        nonlocal b2
+        b2 += data
+
+    def s2_send(data):
+        nonlocal b1
+        b1 += data
+
+    def s1_recv(size):
+        nonlocal b1
+        result = b1[:size]
+        del b1[:size]
+        return result
+
+    def s2_recv(size):
+        nonlocal b2
+        result = bytes(b2[:size])
+        del b2[:size]
+        return result
+
+    return Pipe(s1_send, s1_recv), Pipe(s2_send, s2_recv)
+
+
+if __name__ == "__main__":
+    p1, p2 = test_pipe()
+    p1.write_text("Hello, world!")
+    print(str(p2.read_text()))
