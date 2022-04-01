@@ -1,3 +1,7 @@
+from contextlib import contextmanager, closing
+import socket
+
+
 class Pipe:
     def __init__(self, send_bytes, receive_bytes):
         self.send = send_bytes
@@ -60,6 +64,24 @@ class Pipe:
                 return self.read_bytes()
             case 2:
                 return self.read_int()
+
+
+@contextmanager
+def connect(host, port):
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        sock.connect((host, port))
+        yield Pipe(sock.sendall, sock.recv)
+
+
+@contextmanager
+def accept(host, port):
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((host, port))
+        s.listen()
+        conn, addr = s.accept()
+    with conn:
+        yield Pipe(conn.sendall, conn.recv)
 
 
 def test_pipe():
