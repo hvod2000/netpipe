@@ -19,6 +19,14 @@ class Pipe:
         result.append(digit)
         return sum(b * 128**i for i, b in enumerate(result))
 
+    def write_int(self, number):
+        number = abs(number) * 2 - (number < 0)
+        self.write_uint(number)
+
+    def read_int(self):
+        number = self.read_uint()
+        return (number + 1) // 2 * (-1) ** (number % 2)
+
     def write_text(self, data):
         self.write_bytes(data.encode())
 
@@ -42,7 +50,7 @@ class Pipe:
                 self.write_bytes(byts)
             case int(numb):
                 self.write_uint(2)
-                self.write_uint(numb)
+                self.write_int(numb)
 
     def read(self):
         match self.read_uint():
@@ -51,7 +59,7 @@ class Pipe:
             case 1:
                 return self.read_bytes()
             case 2:
-                return self.read_uint()
+                return self.read_int()
 
 
 def test_pipe():
@@ -87,4 +95,6 @@ if __name__ == "__main__":
     p1.write(42)
     print(p2.read())
     p1.write(b"bytes")
+    print(p2.read())
+    p1.write(-42)
     print(p2.read())
