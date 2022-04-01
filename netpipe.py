@@ -32,6 +32,27 @@ class Pipe:
     def read_bytes(self):
         return self.recv(self.read_uint())
 
+    def write(self, obj):
+        match obj:
+            case str(text):
+                self.write_uint(0)
+                self.write_text(text)
+            case bytes(byts):
+                self.write_uint(1)
+                self.write_bytes(byts)
+            case int(numb):
+                self.write_uint(2)
+                self.write_uint(numb)
+
+    def read(self):
+        match self.read_uint():
+            case 0:
+                return self.read_text()
+            case 1:
+                return self.read_bytes()
+            case 2:
+                return self.read_uint()
+
 
 def test_pipe():
     b1, b2 = bytearray(), bytearray()
@@ -61,5 +82,9 @@ def test_pipe():
 
 if __name__ == "__main__":
     p1, p2 = test_pipe()
-    p1.write_text("Hello, world!")
-    print(str(p2.read_text()))
+    p1.write("Hello, world!")
+    print(p2.read())
+    p1.write(42)
+    print(p2.read())
+    p1.write(b"bytes")
+    print(p2.read())
