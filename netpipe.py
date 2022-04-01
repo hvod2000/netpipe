@@ -18,3 +18,16 @@ class Pipe:
             digit = self.recv(1)[0]
         result.append(digit)
         return sum(b * 128**i for i, b in enumerate(result))
+
+    def write_text(self, data):
+        self.write_bytes(data.encode())
+
+    def read_text(self):
+        return self.read_bytes().decode()
+
+    def write_bytes(self, data):
+        self.write_uint(len(data))
+        self.send(data)
+
+    def read_bytes(self):
+        return self.recv(self.read_uint())
